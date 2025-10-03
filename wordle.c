@@ -46,7 +46,9 @@ bool load_words(char **out_word_list, int *word_count) {
 #define CHUNK_SIZE 40960
     assert(out_word_list != NULL);
     assert(word_count != NULL);
-    auto const file = gzopen("words.db.gz", "rb");
+
+    gzFile const file = gzopen("words.db.gz", "rb");
+    
     if(file == NULL) {
         fprintf(stderr, "Failed to open file\n");
         return false;
@@ -88,7 +90,7 @@ bool load_words(char **out_word_list, int *word_count) {
         goto free_list;
     }
     *out_word_list = word_list;
-    *word_count = cursor / 5;
+    *word_count = cursor / WORD_SIZE;
     gzclose(file);
     return true;
 free_list:
@@ -101,6 +103,8 @@ close_file:
 
 
 void print_guess(char const guess[WORD_SIZE], int const colors[WORD_SIZE]) {
+    assert(guess != NULL);
+    assert(colors != NULL);
     int current_color = 0;
     for(int i = 0; i < WORD_SIZE; i++) {
         int letter_color = colors[i];
@@ -111,21 +115,26 @@ void print_guess(char const guess[WORD_SIZE], int const colors[WORD_SIZE]) {
     putchar('\n');
 }
 
-void process_colors(char const guess[WORD_SIZE], char const answer[WORD_SIZE], int const answer_character_counts[ALPHABET_SIZE], int colors[WORD_SIZE]) {
-    int character_counts[ALPHABET_SIZE];
-    memcpy(character_counts, answer_character_counts, sizeof(character_counts));
+void process_colors(char const guess[WORD_SIZE], char const answer[WORD_SIZE], int const answer_counts[ALPHABET_SIZE], int colors[WORD_SIZE]) {
+    assert(guess != NULL);
+    assert(answer != NULL);
+    assert(answer_counts != NULL);
+    assert(colors != NULL);
+
+    int counts[ALPHABET_SIZE];
+    memcpy(counts, answer_counts, sizeof(counts));
 
     for(int i = 0; i < WORD_SIZE; i++) {
         if(guess[i] != answer[i])
             continue;
         colors[i] = GREEN;
-        character_counts[CHAR_ALPHABET_INDEX(guess[i])]--;
+        counts[CHAR_ALPHABET_INDEX(guess[i])]--;
     }
     for(int i = 0; i < WORD_SIZE; i++) {
-        if(colors[i] == GREEN || character_counts[CHAR_ALPHABET_INDEX(guess[i])] <= 0)
+        if(colors[i] == GREEN || counts[CHAR_ALPHABET_INDEX(guess[i])] <= 0)
             continue;
         colors[i] = YELLOW;
-        character_counts[CHAR_ALPHABET_INDEX(guess[i])]--;
+        counts[CHAR_ALPHABET_INDEX(guess[i])]--;
     }
 }
 
@@ -146,44 +155,53 @@ bool guess_exists(char const guess[WORD_SIZE], char const *word_list, int const 
 }
 
 int main() {
+
+    srand(time(NULL));
+
     char *word_list;
     int word_count;
+
     if(!load_words(&word_list, &word_count))
         return 0;
-    srand(time(NULL));
-    char const * const answer = &word_list[rand() % word_count * 5];
-    int answer_character_counts[ALPHABET_SIZE] = { 0 };
+
+    char const * const answer = &word_list[rand() % word_count * WORD_SIZE];
+
+    int answer_counts[ALPHABET_SIZE] = { 0 };
 
     for(int i = 0; i < WORD_SIZE; i++)
-        answer_character_counts[CHAR_ALPHABET_INDEX(answer[i])]++;
+        answer_counts[CHAR_ALPHABET_INDEX(answer[i])]++;
 
     for(int i = 0; i < MAX_ATTEMPTS; i++) {
+
         char guess[WORD_SIZE + 10];
+
         while(true) {
+
             fputs("Enter your guess: ", stdout);
+
             if(fgets(guess, sizeof(guess), stdin) == NULL)
                 return 1;
 
-
             cursor_up();
-
             erase_line(EL_WHOLE);
 
             int guess_length = strnlen(guess, sizeof(guess)) - 1;
+
             if(guess_length != WORD_SIZE || !isalphas(guess, WORD_SIZE))
                 continue;
+
             for(int y = 0; y < WORD_SIZE; y++)
                 guess[y] = toupper(guess[y]);
 
             if(!guess_exists(guess, word_list, word_count))
                 continue;
+
             break;
         }
 
         int colors[WORD_SIZE] = { GRAY, GRAY, GRAY, GRAY, GRAY };
 
-        process_colors(guess, answer, answer_character_counts, colors);
-
+        process_colors(guess, answer, answer_counts, colors);
         print_guess(guess, colors);
 
         if(strncmp(guess, answer, WORD_SIZE) == 0) {
