@@ -1,4 +1,4 @@
-AC_PREREQ([2.72])
+AC_PREREQ([2.71])
 AC_INIT([wordle], [0.1], [celdaemon@voidgroup.net], [wordle], [https://github.com/CelDaemon/wordle])
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
