@@ -5,16 +5,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - run: mkdir build
-      - run: autoreconf -i
-      - run: ../configure
-        working-directory: build
-      - run: make
-        working-directory: build
-  build-windows:
-    runs-on: ubuntu-latest
-    steps:
       - run: |
           # Skip installing pacakge docs {makes the man-db trigger much faster) 
           # (I disabled `/doc` and `/info` too, just in case.)
@@ -25,9 +15,13 @@ jobs:
           EOF
       - run: sudo apt install gcc-mingw-w64-x86-64 libz-mingw-w64-dev
       - uses: actions/checkout@v5
-      - run: autoreconf -i
-      - run: mkdir build
+      - run: mkdir build-mingw32
       - run: ../configure --host="x86_64-pc-linux-gnu" --target="x86_64-w64-mingw32" CC="x86_64-w64-mingw32-gcc"
+        working-directory: build-mingw32
+      - run: make
+        working-directory: build-mingw32
+      - run: mkdir build
+      - run: ../configure
         working-directory: build
       - run: make
         working-directory: build
