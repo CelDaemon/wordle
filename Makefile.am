@@ -1,3 +1,5 @@
+licensedir = ${datarootdir}/licenses/${PACKAGE}
+
 bin_PROGRAMS = wordle
 
 EXTRA_wordle_SOURCES = words.txt
@@ -7,6 +9,8 @@ wordle_SOURCES = \
 
 pkgdata_DATA = \
 	words.db.gz
+
+dist_license_DATA = LICENSE
 
 if BUILD_STATIC
   wordle_LDFLAGS = \

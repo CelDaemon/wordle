@@ -99,14 +99,15 @@ am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(top_srcdir)/configure \
-	$(am__configure_deps) $(am__DIST_COMMON)
+	$(am__configure_deps) $(dist_license_DATA) $(am__DIST_COMMON)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(pkgdatadir)"
+am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(licensedir)" \
+	"$(DESTDIR)$(pkgdatadir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_wordle_OBJECTS = wordle-wordle.$(OBJEXT)
 wordle_OBJECTS = $(am_wordle_OBJECTS)
@@ -179,7 +180,7 @@ am__uninstall_files_from_dir = { \
   || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
        $(am__cd) "$$dir" && echo $$files | $(am__xargs_n) 40 $(am__rm_f); }; \
   }
-DATA = $(pkgdata_DATA)
+DATA = $(dist_license_DATA) $(pkgdata_DATA)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP) \
 	config.h.in
 # Read a list of newline-separated strings from the standard input,
@@ -325,6 +326,7 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+licensedir = ${datarootdir}/licenses/${PACKAGE}
 EXTRA_wordle_SOURCES = words.txt
 wordle_SOURCES = \
 	wordle.c
@@ -332,6 +334,7 @@ wordle_SOURCES = \
 pkgdata_DATA = \
 	words.db.gz
 
+dist_license_DATA = LICENSE
 @BUILD_STATIC_TRUE@wordle_LDFLAGS = \
 @BUILD_STATIC_TRUE@	  -static
 
@@ -486,6 +489,27 @@ wordle-wordle.obj: wordle.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='wordle.c' object='wordle-wordle.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(wordle_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o wordle-wordle.obj `if test -f 'wordle.c'; then $(CYGPATH_W) 'wordle.c'; else $(CYGPATH_W) '$(srcdir)/wordle.c'; fi`
+install-dist_licenseDATA: $(dist_license_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(dist_license_DATA)'; test -n "$(licensedir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(licensedir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(licensedir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(licensedir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(licensedir)" || exit $$?; \
+	done
+
+uninstall-dist_licenseDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(dist_license_DATA)'; test -n "$(licensedir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(licensedir)'; $(am__uninstall_files_from_dir)
 install-pkgdataDATA: $(pkgdata_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(pkgdata_DATA)'; test -n "$(pkgdatadir)" || list=; \
@@ -749,7 +773,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(PROGRAMS) $(DATA) config.h
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(pkgdatadir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(licensedir)" "$(DESTDIR)$(pkgdatadir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -806,7 +830,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-pkgdataDATA
+install-data-am: install-dist_licenseDATA install-pkgdataDATA
 
 install-dvi: install-dvi-am
 
@@ -853,7 +877,8 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS uninstall-pkgdataDATA
+uninstall-am: uninstall-binPROGRAMS uninstall-dist_licenseDATA \
+	uninstall-pkgdataDATA
 
 .MAKE: all install-am install-strip
 
@@ -865,14 +890,16 @@ uninstall-am: uninstall-binPROGRAMS uninstall-pkgdataDATA
 	distclean-generic distclean-hdr distclean-tags distcleancheck \
 	distdir distuninstallcheck dvi dvi-am html html-am info \
 	info-am install install-am install-binPROGRAMS install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-pdf install-pdf-am \
-	install-pkgdataDATA install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am uninstall-binPROGRAMS uninstall-pkgdataDATA
+	install-data-am install-dist_licenseDATA install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-pkgdataDATA install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic pdf pdf-am \
+	ps ps-am tags tags-am uninstall uninstall-am \
+	uninstall-binPROGRAMS uninstall-dist_licenseDATA \
+	uninstall-pkgdataDATA
 
 .PRECIOUS: Makefile
 
