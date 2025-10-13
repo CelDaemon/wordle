@@ -20,8 +20,11 @@ endif
 wordle_CPPFLAGS = \
 	-DPKGDATADIR='"$(pkgdatadir)"'
 
+wordle_CFLAGS = \
+	$(z_CFLAGS)
+
 wordle_LDADD = \
-	-lz
+	$(z_LIBS)
 
 MOSTLYCLEANFILES = \
 	words.db \

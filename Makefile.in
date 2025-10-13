@@ -112,7 +112,7 @@ PROGRAMS = $(bin_PROGRAMS)
 am_wordle_OBJECTS = wordle-wordle.$(OBJEXT)
 wordle_OBJECTS = $(am_wordle_OBJECTS)
 wordle_DEPENDENCIES =
-wordle_LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(wordle_LDFLAGS) \
+wordle_LINK = $(CCLD) $(wordle_CFLAGS) $(CFLAGS) $(wordle_LDFLAGS) \
 	$(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -265,10 +265,15 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PKG_CONFIG = @PKG_CONFIG@
+PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
+PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
+Z_CFLAGS = @Z_CFLAGS@
+Z_LIBS = @Z_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -341,8 +346,11 @@ dist_license_DATA = LICENSE
 wordle_CPPFLAGS = \
 	-DPKGDATADIR='"$(pkgdatadir)"'
 
+wordle_CFLAGS = \
+	$(z_CFLAGS)
+
 wordle_LDADD = \
-	-lz
+	$(z_LIBS)
 
 MOSTLYCLEANFILES = \
 	words.db \
@@ -477,18 +485,18 @@ am--depfiles: $(am__depfiles_remade)
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
 wordle-wordle.o: wordle.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(wordle_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT wordle-wordle.o -MD -MP -MF $(DEPDIR)/wordle-wordle.Tpo -c -o wordle-wordle.o `test -f 'wordle.c' || echo '$(srcdir)/'`wordle.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(wordle_CPPFLAGS) $(CPPFLAGS) $(wordle_CFLAGS) $(CFLAGS) -MT wordle-wordle.o -MD -MP -MF $(DEPDIR)/wordle-wordle.Tpo -c -o wordle-wordle.o `test -f 'wordle.c' || echo '$(srcdir)/'`wordle.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/wordle-wordle.Tpo $(DEPDIR)/wordle-wordle.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='wordle.c' object='wordle-wordle.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(wordle_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o wordle-wordle.o `test -f 'wordle.c' || echo '$(srcdir)/'`wordle.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(wordle_CPPFLAGS) $(CPPFLAGS) $(wordle_CFLAGS) $(CFLAGS) -c -o wordle-wordle.o `test -f 'wordle.c' || echo '$(srcdir)/'`wordle.c
 
 wordle-wordle.obj: wordle.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(wordle_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT wordle-wordle.obj -MD -MP -MF $(DEPDIR)/wordle-wordle.Tpo -c -o wordle-wordle.obj `if test -f 'wordle.c'; then $(CYGPATH_W) 'wordle.c'; else $(CYGPATH_W) '$(srcdir)/wordle.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(wordle_CPPFLAGS) $(CPPFLAGS) $(wordle_CFLAGS) $(CFLAGS) -MT wordle-wordle.obj -MD -MP -MF $(DEPDIR)/wordle-wordle.Tpo -c -o wordle-wordle.obj `if test -f 'wordle.c'; then $(CYGPATH_W) 'wordle.c'; else $(CYGPATH_W) '$(srcdir)/wordle.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/wordle-wordle.Tpo $(DEPDIR)/wordle-wordle.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='wordle.c' object='wordle-wordle.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(wordle_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o wordle-wordle.obj `if test -f 'wordle.c'; then $(CYGPATH_W) 'wordle.c'; else $(CYGPATH_W) '$(srcdir)/wordle.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(wordle_CPPFLAGS) $(CPPFLAGS) $(wordle_CFLAGS) $(CFLAGS) -c -o wordle-wordle.obj `if test -f 'wordle.c'; then $(CYGPATH_W) 'wordle.c'; else $(CYGPATH_W) '$(srcdir)/wordle.c'; fi`
 install-dist_licenseDATA: $(dist_license_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(dist_license_DATA)'; test -n "$(licensedir)" || list=; \
