@@ -25,4 +25,13 @@ jobs:
         working-directory: build
       - run: make
         working-directory: build
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: mkdir build
+      - run: ../configure
+        working-directory: build
+      - run: make
+        working-directory: build
  

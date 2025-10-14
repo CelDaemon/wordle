@@ -9,6 +9,13 @@
 #include <time.h>
 #include <zlib.h>
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#else
+#include <termios.h>
+#endif
+
 #define WORD_SIZE 5
 #define MAX_ATTEMPTS 6
 
@@ -46,6 +53,49 @@ void cursor_up() {
     fputs(CSI CUU, stdout);
 }
 
+void set_echo(bool echo) {
+#ifdef _WIN32
+    HANDLE std = GetStdHandle(STD_INPUT_HANDLE);
+    DWORD flags;
+    GetConsoleMode(std, &flags);
+    if(echo)
+        flags |= ENABLE_ECHO_INPUT;
+    else
+        flags &= ~ENABLE_ECHO_INPUT;
+    SetConsoleMode(std, flags);
+#else
+    struct termios ts;
+    tcgetattr(STDIN_FILENO, &ts);
+    if(echo)
+        ts.c_lflag |= ECHO;
+    else
+        ts.c_lflag &= ~ECHO;
+    tcsetattr(STDIN_FILENO, TCSANOW, &ts);
+#endif
+}
+
+void set_canon(bool canon) {
+#ifdef _WIN32
+    HANDLE std = GetStdHandle(STD_INPUT_HANDLE);
+    DWORD flags;
+    GetConsoleMode(std, &flags);
+    if(canon)
+        flags |= ENABLE_LINE_INPUT;
+    else
+        flags &= ~ENABLE_LINE_INPUT;
+    SetConsoleMode(std, flags);
+#else
+    struct termios ts;
+    tcgetattr(STDIN_FILENO, &ts);
+    if(canon)
+        ts.c_lflag |= ICANON;
+    else
+        ts.c_lflag &= ~ICANON;
+    tcsetattr(STDIN_FILENO, TCSANOW, &ts);
+
+#endif
+}
+
 bool load_words(char **out_word_list, int *word_count) {
 #define CHUNK_SIZE 40960
     assert(out_word_list != NULL);
@@ -56,14 +106,14 @@ bool load_words(char **out_word_list, int *word_count) {
     else if(access(DB_PATH, F_OK) == 0)
         path = DB_PATH;
     else {
-        fprintf(stderr, "Failed to find words.db.gz");
+        fprintf(stderr, "Failed to find words.db.gz\n");
         return false;
     }
 
     gzFile const file = gzopen(path, "rb");
     
     if(file == NULL) {
-        fprintf(stderr, "Failed to open file\n");
+        perror("Failed to open file");
         return false;
     }
     uint8_t buffer[CHUNK_SIZE];
@@ -78,6 +128,10 @@ bool load_words(char **out_word_list, int *word_count) {
     int bytes_read;
     do {
         bytes_read = gzread(file, &buffer, CHUNK_SIZE);
+        if(bytes_read == -1) {
+            fputs(gzerror(file, NULL), stderr);
+            goto free_list;
+        }
         for(int i = 0; i < bytes_read; i++) {
             if(!isalpha(buffer[i])) {
                 fprintf(stderr, "Invalid character: (%d) index %d\n", buffer[i], cursor + i);
@@ -96,12 +150,6 @@ bool load_words(char **out_word_list, int *word_count) {
         memcpy(&word_list[cursor], &buffer, bytes_read);
         cursor += bytes_read;
     } while(bytes_read == CHUNK_SIZE);
-    int error_code;
-    auto const error_message = gzerror(file, &error_code);
-    if(error_code != Z_OK) {
-        fputs(error_message, stderr);
-        goto free_list;
-    }
     *out_word_list = word_list;
     *word_count = cursor / WORD_SIZE;
     gzclose(file);
@@ -151,14 +199,6 @@ void process_colors(char const guess[WORD_SIZE], char const answer[WORD_SIZE], i
     }
 }
 
-char *isalphas(char * const text, int const text_length) {
-    for(int i = 0; i < text_length; i++) {
-        if(!isalpha(text[i]))
-            return NULL;
-    }
-    return text;
-}
-
 bool guess_exists(char const guess[WORD_SIZE], char const *word_list, int const word_count) {
     for(int i = 0; i < word_count; i++) {
         if(strncmp(guess, &word_list[i * WORD_SIZE], WORD_SIZE) == 0)
@@ -186,31 +226,50 @@ int main() {
 
     for(int i = 0; i < MAX_ATTEMPTS; i++) {
 
-        char guess[WORD_SIZE + 10];
+
+        fputs("Enter your guess: ", stdout);
+
+        char guess[WORD_SIZE];
+        char guess_index = 0;
+
+        set_echo(false);
+        set_canon(false);
 
         while(true) {
 
-            fputs("Enter your guess: ", stdout);
+            //fputs("Enter your guess: ", stdout);
 
-            if(fgets(guess, sizeof(guess), stdin) == NULL)
-                return 1;
+            //if(fgets(guess, sizeof(guess), stdin) == NULL)
+            //    return 1;
 
-            cursor_up();
-            erase_line(EL_WHOLE);
+            //cursor_up();
+            //erase_line(EL_WHOLE);
 
-            int guess_length = strnlen(guess, sizeof(guess)) - 1;
+            //int guess_length = strnlen(guess, sizeof(guess)) - 1;
 
-            if(guess_length != WORD_SIZE || !isalphas(guess, WORD_SIZE))
+            //if(guess_length != WORD_SIZE || !isalphas(guess, WORD_SIZE))
+            //    continue;
+
+            //for(int y = 0; y < WORD_SIZE; y++)
+            //    guess[y] = toupper(guess[y]);
+
+            //if(!guess_exists(guess, word_list, word_count))
+            //    continue;
+
+            //break;
+            //
+            
+            int guess_char = getchar();
+
+            if(guess_index < WORD_SIZE && isalpha(guess_char)) {
+                putchar(guess_char);
+                guess[guess_index++] = guess_char;
                 continue;
-
-            for(int y = 0; y < WORD_SIZE; y++)
-                guess[y] = toupper(guess[y]);
-
-            if(!guess_exists(guess, word_list, word_count))
-                continue;
-
-            break;
+            }
         }
+
+        set_echo(true);
+        set_canon(true);
 
         int colors[WORD_SIZE] = { GRAY, GRAY, GRAY, GRAY, GRAY };
 
