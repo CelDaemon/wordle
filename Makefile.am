@@ -31,7 +31,7 @@ MOSTLYCLEANFILES = \
 	words.db.gz
 
 words.db: words.txt
-	tr -d '\n' < $< > $@
+	sort < $< | tr -d '\n' > $@
 
 words.db.gz: words.db
 	gzip -c $< > $@

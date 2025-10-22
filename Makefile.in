@@ -913,7 +913,7 @@ uninstall-am: uninstall-binPROGRAMS uninstall-dist_licenseDATA \
 
 
 words.db: words.txt
-	tr -d '\n' < $< > $@
+	sort < $< | tr -d '\n' > $@
 
 words.db.gz: words.db
 	gzip -c $< > $@
