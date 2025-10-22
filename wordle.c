@@ -16,7 +16,7 @@
 #define CHAR_ALPHABET_INDEX(x) ((x) - 'A')
 #define ALPHABET_INDEX_CHAR(x) ((x) + 'A')
 
-#define CSI "\e["
+#define CSI "\x1b["
 
 #define CUU "A"
 #define EL_WHOLE 2
@@ -26,19 +26,44 @@
 
 #define SGR_RESET 0
 
+#define UNDERLINE 4
+#define UNDERLINE_RESET 24
+
 #define GRAY 90
 #define GREEN 92
 #define YELLOW 93
 
+enum LetterState {
+    LSTATE_INCORRECT,
+    LSTATE_MISPLACED,
+    LSTATE_CORRECT
+};
+
 #define DEBUG_DB_PATH "words.db.gz"
 #define DB_PATH PKGDATADIR "/words.db.gz"
 
-
-void print_style(int style) {
+void print_style(int const style) {
     printf(CSI "%d" SGR, style);
 }
 
-void erase_line(int arg) {
+void print_state(enum LetterState const state) {
+    switch(state) {
+        case LSTATE_INCORRECT:
+            print_style(GRAY);
+            break;
+        case LSTATE_MISPLACED:
+            print_style(YELLOW);
+            break;
+        case LSTATE_CORRECT:
+            print_style(GREEN);
+            print_style(UNDERLINE);
+            break;
+        default:
+            abort();
+    }
+}
+
+void erase_line(int const arg) {
     printf(CSI "%d" EL, arg);
 }
 
@@ -113,24 +138,29 @@ close_file:
 }
 
 
-void print_guess(char const guess[WORD_SIZE], int const colors[WORD_SIZE]) {
+void print_guess(char const guess[WORD_SIZE], enum LetterState const states[WORD_SIZE]) {
     assert(guess != NULL);
-    assert(colors != NULL);
-    int current_color = 0;
+    assert(states != NULL);
+    enum LetterState current_state = states[0];
+    print_state(current_state);
     for(int i = 0; i < WORD_SIZE; i++) {
-        int letter_color = colors[i];
-        print_style(letter_color);
+        enum LetterState letter_state = states[i];
+        if(current_state != letter_state) {
+            current_state = letter_state;
+            print_style(SGR_RESET);
+            print_state(current_state);
+        }
         putchar(guess[i]);
     }
     print_style(SGR_RESET);
     putchar('\n');
 }
 
-void process_colors(char const guess[WORD_SIZE], char const answer[WORD_SIZE], int const answer_counts[ALPHABET_SIZE], int colors[WORD_SIZE]) {
+void process_states(char const guess[WORD_SIZE], char const answer[WORD_SIZE], int const answer_counts[ALPHABET_SIZE], enum LetterState states[WORD_SIZE]) {
     assert(guess != NULL);
     assert(answer != NULL);
     assert(answer_counts != NULL);
-    assert(colors != NULL);
+    assert(states != NULL);
 
     int counts[ALPHABET_SIZE];
     memcpy(counts, answer_counts, sizeof(counts));
@@ -138,13 +168,13 @@ void process_colors(char const guess[WORD_SIZE], char const answer[WORD_SIZE], i
     for(int i = 0; i < WORD_SIZE; i++) {
         if(guess[i] != answer[i])
             continue;
-        colors[i] = GREEN;
+        states[i] = LSTATE_CORRECT;
         counts[CHAR_ALPHABET_INDEX(guess[i])]--;
     }
     for(int i = 0; i < WORD_SIZE; i++) {
-        if(colors[i] == GREEN || counts[CHAR_ALPHABET_INDEX(guess[i])] <= 0)
+        if(states[i] == LSTATE_CORRECT || counts[CHAR_ALPHABET_INDEX(guess[i])] <= 0)
             continue;
-        colors[i] = YELLOW;
+        states[i] = LSTATE_MISPLACED;
         counts[CHAR_ALPHABET_INDEX(guess[i])]--;
     }
 }
@@ -210,10 +240,10 @@ int main() {
             break;
         }
 
-        int colors[WORD_SIZE] = { GRAY, GRAY, GRAY, GRAY, GRAY };
+        enum LetterState states[WORD_SIZE] = { LSTATE_INCORRECT };
 
-        process_colors(guess, answer, answer_counts, colors);
-        print_guess(guess, colors);
+        process_states(guess, answer, answer_counts, states);
+        print_guess(guess, states);
 
         if(strncmp(guess, answer, WORD_SIZE) == 0) {
             puts("Congratulations, you won!");
