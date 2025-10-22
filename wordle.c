@@ -39,7 +39,7 @@ enum LetterState {
     LSTATE_CORRECT
 };
 
-#define DEBUG_DB_PATH "words.db.gz"
+#define PORTABLE_DB_PATH "words.db.gz"
 #define DB_PATH PKGDATADIR "/words.db.gz"
 
 void print_style(int const style) {
@@ -76,8 +76,8 @@ bool load_words(char **out_word_list, int *word_count) {
     assert(out_word_list != NULL);
     assert(word_count != NULL);
     char const * path = NULL;
-    if(access(DEBUG_DB_PATH, F_OK) == 0)
-        path = DEBUG_DB_PATH;
+    if(access(PORTABLE_DB_PATH, F_OK) == 0)
+        path = PORTABLE_DB_PATH;
     else if(access(DB_PATH, F_OK) == 0)
         path = DB_PATH;
     else {
