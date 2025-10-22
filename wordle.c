@@ -67,7 +67,7 @@ void erase_line(int const arg) {
     printf(CSI "%d" EL, arg);
 }
 
-void cursor_up() {
+void cursor_up(void) {
     fputs(CSI CUU, stdout);
 }
 
@@ -195,7 +195,7 @@ bool guess_exists(char const guess[WORD_SIZE], char const *word_list, int const 
     return false;
 }
 
-int main() {
+int main(void) {
 
     srand(time(NULL));
 
