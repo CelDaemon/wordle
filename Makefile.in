@@ -347,7 +347,8 @@ wordle_CPPFLAGS = \
 	-DPKGDATADIR='"$(pkgdatadir)"'
 
 wordle_CFLAGS = \
-	$(z_CFLAGS)
+	$(z_CFLAGS) \
+	-Wall -Wextra -Wpedantic
 
 wordle_LDADD = \
 	$(z_LIBS)
