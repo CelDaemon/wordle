@@ -12,6 +12,11 @@ jobs:
       - run: make
         working-directory: build
 
+  build-msvc:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: bash ./configure CC="cl.exe"
   build-windows:
     runs-on: ubuntu-latest
     steps:
