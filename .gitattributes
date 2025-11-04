@@ -1,0 +1,10 @@
+/aclocal.m4 -merge -text
+/compile -merge -text
+/config.guess -merge -text
+/config.h.in -merge -text
+/config.sub -merge -text
+/configure -merge -text
+/depcomp -merge -text
+/install-sh -merge -text
+/Makefile.in -merge -text
+/missing -merge -text
