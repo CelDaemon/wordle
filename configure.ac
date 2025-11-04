@@ -9,5 +9,5 @@ AC_PROG_CC
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_SRCDIR([wordle.c])
-AC_CHECK_LIB([z], [gzopen])
+AC_CHECK_LIB([z], [gzopen], [], [AC_MSG_ERROR([libz was not found])])
 AC_OUTPUT

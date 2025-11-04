@@ -4968,6 +4968,9 @@ then :
 
   LIBS="-lz $LIBS"
 
+else case e in #(
+  e) as_fn_error $? "libz was not found" "$LINENO" 5 ;;
+esac
 fi
 
 cat >confcache <<\_ACEOF
