@@ -1,10 +1,10 @@
-/aclocal.m4 -merge -text
-/compile -merge -text
-/config.guess -merge -text
-/config.h.in -merge -text
-/config.sub -merge -text
-/configure -merge -text
-/depcomp -merge -text
-/install-sh -merge -text
-/Makefile.in -merge -text
-/missing -merge -text
+/aclocal.m4 -merge -text linguist-generated=true
+/compile -merge -text linguist-generated=true
+/config.guess -merge -text linguist-generated=true
+/config.h.in -merge -text linguist-generated=true
+/config.sub -merge -text linguist-generated=true
+/configure -merge -text linguist-generated=true
+/depcomp -merge -text linguist-generated=true
+/install-sh -merge -text linguist-generated=true
+/Makefile.in -merge -text linguist-generated=true
+/missing -merge -text linguist-generated=true
