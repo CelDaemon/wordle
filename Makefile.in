@@ -917,7 +917,7 @@ words.db: words.txt
 	sort < $< | tr -d '\n' > $@
 
 words.db.gz: words.db
-	gzip -c $< > $@
+	gzip -n -c $< > $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

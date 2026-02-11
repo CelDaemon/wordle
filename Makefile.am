@@ -35,4 +35,4 @@ words.db: words.txt
 	sort < $< | tr -d '\n' > $@
 
 words.db.gz: words.db
-	gzip -c $< > $@
+	gzip -n -c $< > $@
