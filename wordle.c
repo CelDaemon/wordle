@@ -42,8 +42,24 @@ enum LetterState {
 #define PORTABLE_DB_PATH "words.db.gz"
 #define DB_PATH PKGDATADIR "/words.db.gz"
 
+#define GUESS_BUF_SIZE (WORD_SIZE + 1 + 1)
+
 void print_style(int const style) {
     printf(CSI "%d" SGR, style);
+}
+
+void erase_line(int const arg) {
+    printf(CSI "%d" EL, arg);
+}
+
+void cursor_up(void) {
+    fputs(CSI CUU, stdout);
+}
+
+void normalise_guess(char *str, size_t len) {
+    for (size_t i = 0; i < len; i++) {
+        str[i] = toupper(str[i]);
+    }
 }
 
 void print_state(enum LetterState const state) {
@@ -63,13 +79,6 @@ void print_state(enum LetterState const state) {
     }
 }
 
-void erase_line(int const arg) {
-    printf(CSI "%d" EL, arg);
-}
-
-void cursor_up(void) {
-    fputs(CSI CUU, stdout);
-}
 
 bool load_words(char **out_word_list, int *word_count) {
 #define CHUNK_SIZE 40960
@@ -195,8 +204,53 @@ bool guess_exists(char const guess[WORD_SIZE], char const *word_list, int const 
     return false;
 }
 
-int main(void) {
+void flush_input() {
+    do {
+        int c = fgetc(stdin);
 
+        if (c == '\n')
+            return;
+
+        if (c == EOF)
+            exit(1);
+    } while (true);
+}
+
+bool read_guess(char *guess) {
+    if (fgets(guess, GUESS_BUF_SIZE, stdin) == NULL)
+        exit(1);
+
+    size_t len = strlen(guess);
+
+    if (guess != 0 && guess[len - 1] == '\n')
+        return true;
+
+    flush_input();
+    return false;
+}
+
+void prompt_guess(char *word_list, int word_count, char *guess) {
+    while(true) {
+        fputs("Enter your guess: ", stdout);
+
+        bool valid = read_guess(guess);
+
+        cursor_up();
+        erase_line(EL_WHOLE);
+
+        if(!valid || !isalphas(guess, WORD_SIZE))
+            continue;
+
+        normalise_guess(guess, WORD_SIZE);
+
+        if(!guess_exists(guess, word_list, word_count))
+            continue;
+
+        return;
+    }
+}
+
+int main(void) {
     srand(time(NULL));
 
     char *word_list;
@@ -214,31 +268,9 @@ int main(void) {
 
     for(int i = 0; i < MAX_ATTEMPTS; i++) {
 
-        char guess[WORD_SIZE + 10];
+        char guess[GUESS_BUF_SIZE];
 
-        while(true) {
-
-            fputs("Enter your guess: ", stdout);
-
-            if(fgets(guess, sizeof(guess), stdin) == NULL)
-                return 1;
-
-            cursor_up();
-            erase_line(EL_WHOLE);
-
-            int guess_length = strnlen(guess, sizeof(guess)) - 1;
-
-            if(guess_length != WORD_SIZE || !isalphas(guess, WORD_SIZE))
-                continue;
-
-            for(int y = 0; y < WORD_SIZE; y++)
-                guess[y] = toupper(guess[y]);
-
-            if(!guess_exists(guess, word_list, word_count))
-                continue;
-
-            break;
-        }
+        prompt_guess(word_list, word_count, guess);
 
         enum LetterState states[WORD_SIZE] = { LSTATE_INCORRECT };
 
